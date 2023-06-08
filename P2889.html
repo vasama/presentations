@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>P2889 Distributed Arrays</title>
+
+		<link rel="stylesheet" href="node_modules/reveal.js/dist/reset.css">
+		<link rel="stylesheet" href="node_modules/reveal.js/dist/reveal.css">
+		<link rel="stylesheet" href="node_modules/reveal.js/dist/theme/black.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="node_modules/reveal.js/plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- Introduction: Familiar existing practice -->
+				<section>
+					<pre>
+						<code class="hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							TEST_CASE("my test case") {
+								CHECK(factorial(5) == 120);
+							}
+						</code>
+						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+
+							test_framework::add_test_case(
+								"my test case", my_test_case_func);
+
+						</code>
+						<!--TODO: css hljs-ln-n min width left -->
+						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+							static char my_test_case_init = (
+								test_framework::add_test_case(
+									"my test case", my_test_case_func),
+								0 /* Value for my_test_case_init. */);
+						</code>
+					</pre>
+				</section>
+
+				<!-- Problems with static initialisers -->
+				<section>
+					<h3>Problems with static initalisers</h3>
+					<ul>
+						<li class="fragment">Runtime overhead</li>
+						<li class="fragment">Dynamic allocation</li>
+						<li class="fragment">Fragile linking</li>
+						<li class="fragment">Initialisation order</li>
+						<li class="fragment">Impedes optimisation</li>
+					</ul>
+				</section>
+
+				<!-- Alternative solutions -->
+				<section>
+					<h3>Alternative solutions?</h3>
+					<span class="fragment">
+						Linker sections
+						<pre>
+							<code data-trim data-noescape data-line-numbers>
+								#include &lt;test_framework.hpp&gt;
+
+								static void my_test_case_func() {
+									CHECK(factorial(5) == 120);
+								}
+
+								__attribute__((section("test_framework_test_case_list")))
+								test_framework::test_case const my_test_case = {
+									"my test case", my_test_case_func
+								};
+							</code>
+						</pre>
+					</span>
+				</section>
+
+				<!-- The proposal -->
+				<section>
+					<h2>The proposal</h2>
+					P2889 Distributed Arrays
+				</section>
+				<section>
+					<pre>
+						<code class="hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+
+							test_framework::test_case const my_test_case = {
+								"my test case", my_test_case_func
+							};
+						</code>
+						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+							register(test_framework::test_case_list)
+							test_framework::test_case const my_test_case = {
+								"my test case", my_test_case_func
+							};
+						</code>
+					</pre>
+				</section>
+			</div>
+		</div>
+
+		<script src="node_modules/reveal.js/dist/reveal.js"></script>
+		<script src="node_modules/reveal.js/plugin/notes/notes.js"></script>
+		<script src="node_modules/reveal.js/plugin/markdown/markdown.js"></script>
+		<script src="node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
