@@ -11,13 +11,14 @@
 		<link rel="stylesheet" href="node_modules/reveal.js/dist/theme/black.css">
 
 		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="node_modules/reveal.js/plugin/highlight/monokai.css">
+		<link rel="stylesheet" href="highlight.css">
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
 				<!-- Introduction: Familiar existing practice -->
 				<section>
+					<h3>Familiar existing practice</h3>
 					<pre>
 						<code class="hljs c++" data-trim data-noescape data-line-numbers>
 							#include &lt;test_framework.hpp&gt;
@@ -26,7 +27,7 @@
 								CHECK(factorial(5) == 120);
 							}
 						</code>
-						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
+						<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
 							#include &lt;test_framework.hpp&gt;
 
 							static void my_test_case_func() {
@@ -39,7 +40,7 @@
 
 						</code>
 						<!--TODO: css hljs-ln-n min width left -->
-						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
+						<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
 							#include &lt;test_framework.hpp&gt;
 
 							static void my_test_case_func() {
@@ -56,70 +57,188 @@
 
 				<!-- Problems with static initialisers -->
 				<section>
-					<h3>Problems with static initalisers</h3>
+					<h3><span style="text-decoration: red line-through">Ab</span>using static initialisers</h3>
 					<ul>
 						<li class="fragment">Runtime overhead</li>
 						<li class="fragment">Dynamic allocation</li>
 						<li class="fragment">Fragile linking</li>
 						<li class="fragment">Initialisation order</li>
-						<li class="fragment">Impedes optimisation</li>
+						<li class="fragment">Poorly optimisable</li>
 					</ul>
 				</section>
 
 				<!-- Alternative solutions -->
 				<section>
-					<h3>Alternative solutions?</h3>
-					<span class="fragment">
-						Linker sections
-						<pre>
-							<code data-trim data-noescape data-line-numbers>
-								#include &lt;test_framework.hpp&gt;
+					<h3>Requirements</h3>
+					<ul>
+						<li class="fragment">Contiguous array</li>
+						<li class="fragment">Static storage duration</li>
+						<li class="fragment">Constant-initialisable</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Alternatives?</h2>
+					<h4 class="fragment" data-fragment-index="2">Linker sections</h4>
+					<!--TODO: Get rid of code block shadow -->
+					<pre>
+						<code class="fragment" data-fragment-index="1" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
 
-								static void my_test_case_func() {
-									CHECK(factorial(5) == 120);
-								}
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
 
-								__attribute__((section("test_framework_test_case_list")))
-								test_framework::test_case const my_test_case = {
-									"my test case", my_test_case_func
-								};
-							</code>
-						</pre>
-					</span>
+
+							test_framework::test_case const my_test_case = {
+								"my test case", my_test_case_func
+							};
+						</code>
+						<code class="fragment" data-fragment-index="3" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+							__attribute__((section("test_framework_test_case_list")))
+							test_framework::test_case const my_test_case = {
+								"my test case", my_test_case_func
+							};
+						</code>
+						<code class="fragment" data-fragment-index="4" data-trim data-noescape data-line-numbers>
+							#include &lt;test_framework.hpp&gt;
+
+							static void my_test_case_func() {
+								CHECK(factorial(5) == 120);
+							}
+
+							__attribute__((section("test_framework_test_case_list")))
+							test_framework::test_case const my_test_case = {
+								"my test case", my_test_case_func
+							};
+
+							__attribute__((section("test_framework_test_case_list")))
+							int unrelated_data = 42;
+						</code>
+					</pre>
 				</section>
 
 				<!-- The proposal -->
 				<section>
-					<h2>The proposal</h2>
-					P2889 Distributed Arrays
-				</section>
-				<section>
-					<pre>
-						<code class="hljs c++" data-trim data-noescape data-line-numbers>
-							#include &lt;test_framework.hpp&gt;
+					<section>
+						<h2>The proposal</h2>
+						<h4 class="fragment">P2889 Distributed Arrays</h4>
+						<pre>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								#include &lt;test_framework.hpp&gt;
+	
+								static void my_test_case_func() {
+									CHECK(factorial(5) == 120);
+								}
+	
+	
+								test_framework::test_case const my_test_case = {
+									"my test case", my_test_case_func
+								};
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								#include &lt;test_framework.hpp&gt;
+	
+								static void my_test_case_func() {
+									CHECK(factorial(5) == 120);
+								}
+	
+								register(test_framework::test_case_list)
+								test_framework::test_case const my_test_case = {
+									"my test case", my_test_case_func
+								};
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace test_framework {
+	
+	
+	
+	
+	
+	
+	
+	
+								}
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace test_framework {
+									using test_case_func = void();
+	
+	
+	
+	
+	
+	
+	
+								}
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace test_framework {
+									using test_case_func = void();
+	
+									struct test_case {
+										std::string_view name;
+										test_case_func* func;
+									};
+	
+	
+								}
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace test_framework {
+									using test_case_func = void();
+	
+									struct test_case {
+										std::string_view name;
+										test_case_func* func;
+									};
+	
+									test_case const test_case_list[];
+								}
+							</code>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace test_framework {
+									using test_case_func = void();
+	
+									struct test_case {
+										std::string_view name;
+										test_case_func* func;
+									};
+	
+									test_case const test_case_list[register];
+								}
+							</code>
+						</pre>
+					</section>
+					<section>
+						<h4>New kind of type</h4>
+						<p class="fragment"><span class="hljs-type">int</span>[<span class="hljs-keyword">register</span>] names a distributed array type.</p>
+						<pre>
+							<code class="hljs c++ fragment" data-trim data-noescape data-line-numbers>
+								namespace std {
+									template&lt;typename T&gt;
+									size_t size(T const(&array)[register]) noexcept {
+										return __builtin_distributed_array_size(array);
+									}
 
-							static void my_test_case_func() {
-								CHECK(factorial(5) == 120);
-							}
+									template&lt;typename T&gt;
+									T* begin(T(&array)[register]) noexcept {
+										return array;
+									}
 
-
-							test_framework::test_case const my_test_case = {
-								"my test case", my_test_case_func
-							};
-						</code>
-						<code class="fragment hljs c++" data-trim data-noescape data-line-numbers>
-							#include &lt;test_framework.hpp&gt;
-
-							static void my_test_case_func() {
-								CHECK(factorial(5) == 120);
-							}
-
-							register(test_framework::test_case_list)
-							test_framework::test_case const my_test_case = {
-								"my test case", my_test_case_func
-							};
-						</code>
-					</pre>
+									template&lt;typename T&gt;
+									T* end(T(&array)[register]) noexcept {
+										return array + size(array);
+									}
+								}
+							</code>
+						</pre>
+					</section>
 				</section>
 			</div>
 		</div>
@@ -136,7 +255,7 @@
 				hash: true,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
 			});
 		</script>
 	</body>
