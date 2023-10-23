@@ -16,6 +16,90 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
+				<!-- Introduction -->
+				<section>
+					<h1>Service discovery</h1>
+					<h1>Distributed arrays</h1>
+				</section>
+				<section>
+					<h2>What is a service?</h2>
+
+					<h3>Script functions</h3>
+
+					<h3>Program initialisation</h3>
+
+					<h3>Unit test cases</h3>
+				</section>
+				
+				<section>
+					<h3>Scripting functions</h3>
+
+					<pre class="fragment">
+						<code class="hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;my/script.hpp&gt;
+							#include &lt;chrono&gt;
+
+							using namespace std::chrono;
+
+							static my::script_value get_date()
+							{
+								year_month_day d = floor&lt;days&gt;(utc_clock::now());
+								return my::make_script_array(d.year(), d.month(), d.day());
+							}
+							REGISTER_SCRIPT_FUNCTION(get_date);
+						</code>
+					</pre>
+				</section>
+				
+				<section>
+					<h3>Cryptographic algorithms</h3>
+
+					<pre class="fragment">
+						<code class="hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;my/hash_algorithm.hpp&gt;
+						
+							struct sha256_algorithm
+							{
+								using state_type = array&lt;byte, 32&gt;;
+								static void initialize(state_type& s);
+								static void append(state_type& s, span&lt;const byte&gt; bytes);
+								static void finalize(state_type& s, span&lt;byte&gt; hash);
+							};
+							REGISTER_HASH_ALGORITHM("SHA256", sha256_algorithm);
+						</code>
+					</pre>
+				</section>
+				
+				<section>
+					<h3>Unit test cases</h3>
+					
+					<pre class="fragment">
+						<code class="hljs c++" data-trim data-noescape data-line-numbers>
+							#include &lt;my/path.hpp&gt;
+							#include &lt;catch2/catch_all.hpp&gt;
+
+							TEST_CASE("path splitting")
+							{
+								REQUIRE(ranges::equal(
+									split_path("/home/vasama/presentation.html"),
+									{ "/", "home", "vasama", "presentation.html" }));
+							}
+						</code>
+					</pre>
+				</section>
+				
+				<section>
+					<h3>Web API endpoints</h3>
+					
+					
+				</section>
+				
+
+				<!-- Services, what are they? -->
+				<section>
+					
+				</section>
+
 				<!-- Introduction: Familiar existing practice -->
 				<section>
 					<h3>Familiar existing practice</h3>
